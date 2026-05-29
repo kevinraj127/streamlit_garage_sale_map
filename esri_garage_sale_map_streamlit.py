@@ -196,6 +196,18 @@ if df_raw.empty:
 # ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
 with st.expander("🔍 Debug: API column names"):
     st.write(sorted(df_raw.columns.tolist()))
+    st.markdown("**MusicFilm unique values:**")
+    if "MusicFilm" in df_raw.columns:
+        st.write(df_raw["MusicFilm"].unique().tolist())
+    st.markdown("**MusicFilmDVDs unique values:**")
+    if "MusicFilmDVDs" in df_raw.columns:
+        st.write(df_raw["MusicFilmDVDs"].unique().tolist())
+    st.markdown("**MusicFilmCDsCassettes unique values:**")
+    if "MusicFilmCDsCassettes" in df_raw.columns:
+        st.write(df_raw["MusicFilmCDsCassettes"].unique().tolist())
+    st.markdown("**MusicFilmVinylRecords unique values:**")
+    if "MusicFilmVinylRecords" in df_raw.columns:
+        st.write(df_raw["MusicFilmVinylRecords"].unique().tolist())
 
 # ── Filter: must have at least one selected music/film subcategory ─────────────
 active_fields = [field for field, checked in selected_cats.items() if checked]
