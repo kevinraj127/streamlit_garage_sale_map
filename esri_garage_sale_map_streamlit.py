@@ -15,11 +15,12 @@ FEATURE_SERVICE_URL = (
 # We need to convert x/y to WGS84 lat/lon for the map
 transformer = Transformer.from_crs("EPSG:2276", "EPSG:4326", always_xy=True)
 
+# Keys = sidebar label, values = substring to search in MusicFilm field
 MUSIC_FILM_SUBCATEGORIES = {
-    "DVDs":             "MusicFilmDVDs",
-    "CDs & Cassettes":  "MusicFilmCDsCassettes",
-    "Vinyl Records":    "MusicFilmVinylRecords",
-    "Musical Instruments": "MusicFilmMusicalIntruments",
+    "DVDs":                "DVDs",
+    "CDs & Cassettes":     "CDs",
+    "Vinyl Records":       "Vinyl",
+    "Musical Instruments": "Musical",
 }
 
 NO_MUSIC_VALUE = "No Music nor Film Items for Sale"
@@ -216,21 +217,13 @@ if not active_fields:
     st.warning("Select at least one Music & Film category in the sidebar.")
     st.stop()
 
-# Keep rows where Music & Film Items is not the "no items" value
-music_col = "MusicFilm" if "MusicFilm" in df_raw.columns else None
-
+# Filter using MusicFilm comma-separated string field
 def has_music_film(row):
-    # Check the broad category first
-    if music_col and pd.notna(row.get(music_col)):
-        broad = str(row[music_col])
-        if broad.startswith("No ") or broad.strip() == "":
-            return False
-    # Check at least one selected subcategory has a value
-    for field in active_fields:
-        val = row.get(field, None)
-        if pd.notna(val) and str(val).strip() not in ("", "0", "None"):
-            return True
-    return False
+    val = str(row.get("MusicFilm", "") or "")
+    if val == "No Music nor Film Items for Sale" or val.strip() == "":
+        return False
+    # At least one selected category keyword must appear
+    return any(kw in val for kw in active_fields)
 
 df = df_raw[df_raw.apply(has_music_film, axis=1)].copy()
 
@@ -243,19 +236,14 @@ if "SaleEndDate" in df.columns:
 # ── Metrics row ───────────────────────────────────────────────────────────────
 total = len(df)
 
-def count_cat(col):
-    if col not in df.columns:
+def count_cat(keyword):
+    if "MusicFilm" not in df.columns:
         return 0
-    vals = df[col].astype(str).str.strip()
-    # Exclude nulls, blanks, zeros, and "No ..." negative values (e.g. "No DVDs for Sale")
-    return int((
-        ~vals.isin(["", "None", "0", "nan"]) &
-        ~vals.str.startswith("No ")
-    ).sum())
+    return int(df["MusicFilm"].astype(str).str.contains(keyword, na=False).sum())
 
-dvd_ct   = count_cat("MusicFilmDVDs")
-cd_ct    = count_cat("MusicFilmCDsCassettes")
-vinyl_ct = count_cat("MusicFilmVinylRecords")
+dvd_ct   = count_cat("DVDs")
+cd_ct    = count_cat("CDs")
+vinyl_ct = count_cat("Vinyl")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
