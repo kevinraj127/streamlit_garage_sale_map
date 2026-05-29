@@ -427,10 +427,24 @@ with table_col:
 
     df_display.insert(1, "Permit", [make_permit_link(i) for i in df_display.index])
 
-    # Move Music/Film to position 2 (right after Permit)
+    # Add EstateSales.net search link — only for estate sales
+    def make_estate_link(idx):
+        sale_type = str(df.loc[idx, "SaleType"]) if "SaleType" in df.columns else ""
+        if "estate" not in sale_type.lower():
+            return None
+        address = df.loc[idx, "main_address"] if "main_address" in df.columns else ""
+        if not address or str(address).strip() in ("", "None", "nan"):
+            return None
+        query = f'site:estatesales.net "{address}" McKinney'
+        import urllib.parse
+        return f"https://www.google.com/search?q={urllib.parse.quote(query)}"
+
+    df_display.insert(2, "Estate Sale", [make_estate_link(i) for i in df_display.index])
+
+    # Move Music/Film to position 3 (right after Estate Sale)
     if "Music/Film" in df_display.columns:
         col = df_display.pop("Music/Film")
-        df_display.insert(2, "Music/Film", col)
+        df_display.insert(3, "Music/Film", col)
 
     # Sort: by date ascending (soonest first)
     df_display["_date_sort"] = pd.to_numeric(
@@ -457,6 +471,10 @@ with table_col:
             "Permit": st.column_config.LinkColumn(
                 "Permit",
                 display_text="View",
+            ),
+            "Estate Sale": st.column_config.LinkColumn(
+                "Estate Sale",
+                display_text="Search",
             ),
         },
     )
