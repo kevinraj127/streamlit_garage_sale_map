@@ -206,13 +206,13 @@ if not active_fields:
     st.stop()
 
 # Keep rows where Music & Film Items is not the "no items" value
-music_col = "Music & Film Items" if "Music & Film Items" in df_raw.columns else None
+music_col = "MusicFilm" if "MusicFilm" in df_raw.columns else None
 
 def has_music_film(row):
     # Check the broad category first
     if music_col and pd.notna(row.get(music_col)):
         broad = str(row[music_col])
-        if broad == NO_MUSIC_VALUE or broad.strip() == "":
+        if broad.startswith("No ") or broad.strip() == "":
             return False
     # Check at least one selected subcategory has a value
     for field in active_fields:
@@ -286,11 +286,11 @@ with map_col:
         }
 
         addr_col    = "main_address"     if "main_address"     in map_df.columns else None
-        timing_col2 = "Sale Is Today"    if "Sale Is Today"    in map_df.columns else None
+        timing_col2 = "SaleIsToday" if "SaleIsToday" in map_df.columns else None
         start_col   = "SaleStartDate"    if "SaleStartDate"    in map_df.columns else None
         time_s_col  = next((c for c in ["Sale Start Time", "SaleStartTime"] if c in map_df.columns), None)
         time_e_col  = next((c for c in ["Sale End Time",   "SaleEndTime"]   if c in map_df.columns), None)
-        pay_col2    = "Payment Accepted" if "Payment Accepted" in map_df.columns else None
+        pay_col2    = "PaymentAccepted" if "PaymentAccepted" in map_df.columns else None
 
         for _, row in map_df.iterrows():
             timing = row.get(timing_col2, "Future Sale") if timing_col2 else "Future Sale"
@@ -360,31 +360,31 @@ with table_col:
 
     time_cols = [c for c in [start_time_col, end_time_col] if c]
     display_fields = []
-    permit_num_col = next((c for c in ["PermitNumber", "Permit Number", "permitnumber", "PERMITNUMBER"] if c in df.columns), None)
-    for col in ["Sale Is Today", "main_address", "SaleStartDate"] + time_cols + [
+    permit_num_col = next((c for c in ["permit_number", "PermitNumber", "Permit Number"] if c in df.columns), None)
+    for col in ["SaleIsToday", "main_address", "SaleStartDate"] + time_cols + [
                 permit_num_col,
-                "Payment Accepted", "Sale Type",
+                "PaymentAccepted", "SaleType",
                 "MusicFilmDVDs", "MusicFilmCDsCassettes",
                 "MusicFilmVinylRecords", "MusicFilmMusicalIntruments",
-                "Music & Film Items"]:
+                "MusicFilm"]:
         if col and col in df.columns:
             display_fields.append(col)
 
     rename_map = {
-        "Sale Is Today":              "Timing",
+        "SaleIsToday":                "Timing",
         "main_address":               "Address",
         "SaleStartDate":              "Date",
         "Sale Start Time":            "Start",
         "SaleStartTime":              "Start",
         "Sale End Time":              "End",
         "SaleEndTime":                "End",
-        "Payment Accepted":           "Payment",
-        "Sale Type":                  "Type",
+        "PaymentAccepted":            "Payment",
+        "SaleType":                   "Type",
         "MusicFilmDVDs":              "DVDs",
         "MusicFilmCDsCassettes":      "CDs",
         "MusicFilmVinylRecords":      "Vinyl",
         "MusicFilmMusicalIntruments": "Instruments",
-        "Music & Film Items":         "Music/Film Items",
+        "MusicFilm":                  "Music/Film",
         "PermitNumber":               "Permit #",
         "Permit Number":              "Permit #",
         "permitnumber":               "Permit #",
