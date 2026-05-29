@@ -192,6 +192,10 @@ with st.spinner("Fetching live garage sale data from McKinney GIS..."):
 
 if df_raw.empty:
     st.warning("No garage sale records returned from the API.")
+
+# ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
+with st.expander("🔍 Debug: API column names"):
+    st.write(sorted(df_raw.columns.tolist()))
     st.stop()
 
 # ── Filter: must have at least one selected music/film subcategory ─────────────
@@ -231,11 +235,16 @@ total = len(df)
 def count_cat(col):
     if col not in df.columns:
         return 0
-    return int((df[col].astype(str).str.strip().isin(["", "None", "0", "nan"]) == False).sum())
+    vals = df[col].astype(str).str.strip()
+    # Exclude nulls, blanks, zeros, and "No ..." negative values (e.g. "No DVDs for Sale")
+    return int((
+        ~vals.isin(["", "None", "0", "nan"]) &
+        ~vals.str.startswith("No ")
+    ).sum())
 
 dvd_ct   = count_cat("MusicFilmDVDs")
-cd_ct    = count_cat("CD & Cassettes") if "CD & Cassettes" in df.columns else count_cat("MusicFilmCDsCassettes")
-vinyl_ct = count_cat("Vinyl Records") if "Vinyl Records" in df.columns else count_cat("MusicFilmVinylRecords")
+cd_ct    = count_cat("MusicFilmCDsCassettes")
+vinyl_ct = count_cat("MusicFilmVinylRecords")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -351,7 +360,9 @@ with table_col:
 
     time_cols = [c for c in [start_time_col, end_time_col] if c]
     display_fields = []
+    permit_num_col = next((c for c in ["PermitNumber", "Permit Number", "permitnumber", "PERMITNUMBER"] if c in df.columns), None)
     for col in ["Sale Is Today", "main_address", "SaleStartDate"] + time_cols + [
+                permit_num_col,
                 "Payment Accepted", "Sale Type",
                 "MusicFilmDVDs", "MusicFilmCDsCassettes",
                 "MusicFilmVinylRecords", "MusicFilmMusicalIntruments",
@@ -374,6 +385,10 @@ with table_col:
         "MusicFilmVinylRecords":      "Vinyl",
         "MusicFilmMusicalIntruments": "Instruments",
         "Music & Film Items":         "Music/Film Items",
+        "PermitNumber":               "Permit #",
+        "Permit Number":              "Permit #",
+        "permitnumber":               "Permit #",
+        "PERMITNUMBER":               "Permit #",
     }
 
     df_display = df[display_fields].rename(columns=rename_map).copy()
@@ -394,6 +409,17 @@ with table_col:
 
     df_display.insert(0, "Map Link", [make_maps_link(i) for i in df_display.index])
 
+    # Add Permit link column — field name confirmed via debug expander
+    def make_permit_link(idx):
+        if not permit_num_col:
+            return None
+        permit_num = df.loc[idx, permit_num_col]
+        if pd.notna(permit_num) and str(permit_num).strip():
+            return f"https://egov.mckinneytexas.org/EnerGov_Prod/SelfService#/search?m=2&ps=10&pn=1&em=true&st={permit_num}"
+        return None
+
+    df_display.insert(1, "Permit", [make_permit_link(i) for i in df_display.index])
+
     # Sort: by date ascending (soonest first)
     df_display["_date_sort"] = pd.to_numeric(
         df.loc[df_display.index, "SaleStartDate"] if "SaleStartDate" in df.columns else pd.Series(dtype=float),
@@ -410,6 +436,10 @@ with table_col:
             "Map Link": st.column_config.LinkColumn(
                 "Map Link",
                 display_text="Open",
+            ),
+            "Permit": st.column_config.LinkColumn(
+                "Permit",
+                display_text="View",
             ),
         },
     )
