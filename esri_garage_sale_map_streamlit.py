@@ -364,10 +364,10 @@ with table_col:
     for col in ["SaleIsToday", "main_address", "SaleStartDate"] + time_cols + [
                 desc_col,
                 permit_num_col,
+                "MusicFilm",
                 "PaymentAccepted", "SaleType",
                 "MusicFilmDVDs", "MusicFilmCDsCassettes",
-                "MusicFilmVinylRecords", "MusicFilmMusicalIntruments",
-                "MusicFilm"]:
+                "MusicFilmVinylRecords", "MusicFilmMusicalIntruments"]:
         if col and col in df.columns:
             display_fields.append(col)
 
