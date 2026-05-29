@@ -365,7 +365,7 @@ with table_col:
                 "PaymentAccepted", "SaleType",
                 "MusicFilmDVDs", "MusicFilmCDsCassettes",
                 "MusicFilmVinylRecords", "MusicFilmMusicalIntruments",
-                "MusicFilm"]:
+                "MusicFilm", "SaleInformation"]:
         if col and col in df.columns:
             display_fields.append(col)
 
@@ -384,6 +384,7 @@ with table_col:
         "MusicFilmVinylRecords":      "Vinyl",
         "MusicFilmMusicalIntruments": "Instruments",
         "MusicFilm":                  "Music/Film",
+        "SaleInformation":            "Sale Info",
         "PermitNumber":               "Permit #",
         "Permit Number":              "Permit #",
         "permitnumber":               "Permit #",
