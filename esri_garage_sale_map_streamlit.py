@@ -234,8 +234,8 @@ def count_cat(col):
     return int((df[col].astype(str).str.strip().isin(["", "None", "0", "nan"]) == False).sum())
 
 dvd_ct   = count_cat("MusicFilmDVDs")
-cd_ct    = count_cat("MusicFilmCDsCassettes")
-vinyl_ct = count_cat("MusicFilmVinylRecords")
+cd_ct    = count_cat("CD & Cassettes") if "CD & Cassettes" in df.columns else count_cat("MusicFilmCDsCassettes")
+vinyl_ct = count_cat("Vinyl Records") if "Vinyl Records" in df.columns else count_cat("MusicFilmVinylRecords")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
