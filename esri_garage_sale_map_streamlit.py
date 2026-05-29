@@ -366,7 +366,7 @@ with table_col:
     permit_num_col = next((c for c in ["permit_number", "PermitNumber", "Permit Number"] if c in df.columns), None)
     desc_col = next((c for c in ["description", "SaleInformation"] if c in df.columns), None)
     for col in ["SaleIsToday", "main_address", "SaleStartDate"] + time_cols + [
-                "SaleType", desc_col]:
+                "MusicFilm", "SaleType", desc_col]:
         if col and col in df.columns:
             display_fields.append(col)
 
