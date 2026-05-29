@@ -197,6 +197,9 @@ if df_raw.empty:
 # ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
 with st.expander("🔍 Debug: API column names"):
     st.write(sorted(df_raw.columns.tolist()))
+    st.markdown("**SaleIsToday unique values:**")
+    if "SaleIsToday" in df_raw.columns:
+        st.write(df_raw["SaleIsToday"].unique().tolist())
     st.markdown("**MusicFilm unique values:**")
     if "MusicFilm" in df_raw.columns:
         st.write(df_raw["MusicFilm"].unique().tolist())
