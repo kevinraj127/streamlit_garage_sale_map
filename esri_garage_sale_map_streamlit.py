@@ -360,12 +360,14 @@ with table_col:
     time_cols = [c for c in [start_time_col, end_time_col] if c]
     display_fields = []
     permit_num_col = next((c for c in ["permit_number", "PermitNumber", "Permit Number"] if c in df.columns), None)
+    desc_col = next((c for c in ["description", "SaleInformation"] if c in df.columns), None)
     for col in ["SaleIsToday", "main_address", "SaleStartDate"] + time_cols + [
+                desc_col,
                 permit_num_col,
                 "PaymentAccepted", "SaleType",
                 "MusicFilmDVDs", "MusicFilmCDsCassettes",
                 "MusicFilmVinylRecords", "MusicFilmMusicalIntruments",
-                "MusicFilm", "SaleInformation", "description"]:
+                "MusicFilm"]:
         if col and col in df.columns:
             display_fields.append(col)
 
@@ -437,6 +439,10 @@ with table_col:
             "Map Link": st.column_config.LinkColumn(
                 "Map Link",
                 display_text="Open",
+            ),
+            "Sale Info": st.column_config.TextColumn(
+                "Sale Info",
+                width="large",
             ),
             "Permit": st.column_config.LinkColumn(
                 "Permit",
