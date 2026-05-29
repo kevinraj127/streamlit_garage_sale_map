@@ -282,7 +282,7 @@ with map_col:
         )
 
         timing_colors = {
-            "Sale Is Today": "#c0392b",
+            "Sale is Today": "#c0392b",
             "Sale Soon":     "#e67e22",
             "Future Sale":   "#7f8c8d",
         }
@@ -295,7 +295,8 @@ with map_col:
         pay_col2    = "PaymentAccepted" if "PaymentAccepted" in map_df.columns else None
 
         for _, row in map_df.iterrows():
-            timing = row.get(timing_col2, "Future Sale") if timing_col2 else "Future Sale"
+            timing = row.get(timing_col2) if timing_col2 else None
+            timing = timing if isinstance(timing, str) else "Future Sale"
             color  = timing_colors.get(timing, "#7f8c8d")
 
             address  = row.get(addr_col, "Unknown address") if addr_col else "Unknown"
