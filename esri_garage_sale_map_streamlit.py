@@ -423,6 +423,11 @@ with table_col:
 
     df_display.insert(1, "Permit", [make_permit_link(i) for i in df_display.index])
 
+    # Move Music/Film to position 2 (right after Permit)
+    if "Music/Film" in df_display.columns:
+        col = df_display.pop("Music/Film")
+        df_display.insert(2, "Music/Film", col)
+
     # Sort: by date ascending (soonest first)
     df_display["_date_sort"] = pd.to_numeric(
         df.loc[df_display.index, "SaleStartDate"] if "SaleStartDate" in df.columns else pd.Series(dtype=float),
