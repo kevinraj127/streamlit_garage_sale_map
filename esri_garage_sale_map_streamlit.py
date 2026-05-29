@@ -435,6 +435,7 @@ with table_col:
         use_container_width=True,
         height=460,
         hide_index=True,
+        row_height=100,
         column_config={
             "Map Link": st.column_config.LinkColumn(
                 "Map Link",
