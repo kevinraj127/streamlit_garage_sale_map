@@ -196,7 +196,6 @@ if df_raw.empty:
 # ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
 with st.expander("🔍 Debug: API column names"):
     st.write(sorted(df_raw.columns.tolist()))
-    st.stop()
 
 # ── Filter: must have at least one selected music/film subcategory ─────────────
 active_fields = [field for field, checked in selected_cats.items() if checked]
