@@ -212,6 +212,16 @@ with st.expander("🔍 Debug: API column names"):
     st.markdown("**MusicFilmVinylRecords unique values:**")
     if "MusicFilmVinylRecords" in df_raw.columns:
         st.write(df_raw["MusicFilmVinylRecords"].unique().tolist())
+    st.markdown("**SaleEndDate sample values:**")
+    if "SaleEndDate" in df_raw.columns:
+        st.write(df_raw["SaleEndDate"].dropna().head(5).tolist())
+    else:
+        st.write("⚠️ SaleEndDate column NOT present in API response")
+    st.markdown("**SaleStartDate sample values:**")
+    if "SaleStartDate" in df_raw.columns:
+        st.write(df_raw["SaleStartDate"].dropna().head(5).tolist())
+    else:
+        st.write("⚠️ SaleStartDate column NOT present in API response")
 
 # ── Filter: must have at least one selected music/film subcategory ─────────────
 active_fields = [field for field, checked in selected_cats.items() if checked]
@@ -230,11 +240,11 @@ def has_music_film(row):
 
 df = df_raw[df_raw.apply(has_music_film, axis=1)].copy()
 
-# ── Filter: exclude past sales (SaleEndDate before today) ────────────────────
-if "SaleEndDate" in df.columns:
-    today_ms = int(pd.Timestamp.now(tz="UTC").normalize().timestamp() * 1000)
-    end_dates = pd.to_numeric(df["SaleEndDate"], errors="coerce")
-    df = df[end_dates.isna() | (end_dates >= today_ms)]
+# ── Filter: exclude past sales ────────────────────────────────────────────────
+ACTIVE_TIMING = {"Future Sale", "Sale is Today", "Sale Soon"}
+
+if "SaleIsToday" in df.columns:
+    df = df[df["SaleIsToday"].isin(ACTIVE_TIMING)]
 
 # ── Metrics row ───────────────────────────────────────────────────────────────
 total = len(df)
@@ -287,9 +297,9 @@ with map_col:
             "Future Sale":   "#7f8c8d",
         }
 
-        addr_col    = "main_address"     if "main_address"     in map_df.columns else None
-        timing_col2 = "SaleIsToday" if "SaleIsToday" in map_df.columns else None
-        start_col   = "SaleStartDate"    if "SaleStartDate"    in map_df.columns else None
+        addr_col    = "main_address"  if "main_address"  in map_df.columns else None
+        timing_col2 = "SaleIsToday"   if "SaleIsToday"   in map_df.columns else None
+        start_col   = "SaleStartDate" if "SaleStartDate" in map_df.columns else None
         time_s_col  = next((c for c in ["Sale Start Time", "SaleStartTime"] if c in map_df.columns), None)
         time_e_col  = next((c for c in ["Sale End Time",   "SaleEndTime"]   if c in map_df.columns), None)
         pay_col2    = "PaymentAccepted" if "PaymentAccepted" in map_df.columns else None
