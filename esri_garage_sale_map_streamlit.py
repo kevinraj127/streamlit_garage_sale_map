@@ -220,6 +220,10 @@ with st.expander("🔍 Debug: Layer metadata"):
         meta_json = meta_resp.json()
         st.markdown("**editingInfo:**")
         st.write(meta_json.get("editingInfo"))
+        st.markdown("**timeInfo:**")
+        st.write(meta_json.get("timeInfo"))
+        st.markdown("**description:**")
+        st.write(meta_json.get("description"))
         st.markdown("**Full metadata keys:**")
         st.write(list(meta_json.keys()))
     except Exception as ex:
