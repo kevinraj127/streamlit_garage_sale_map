@@ -114,6 +114,24 @@ h1, h2, h3 {
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown("## 🎵 McKinney Garage Sales")
 st.markdown("*Music & Film Item Finder — Live from McKinney Open GIS*")
+
+# ── Last refreshed timestamp from ArcGIS layer metadata ──────────────────────
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_last_updated():
+    layer_url = FEATURE_SERVICE_URL.replace("/query", "") + "?f=json"
+    try:
+        resp = requests.get(layer_url, timeout=10)
+        meta = resp.json()
+        ts = (meta.get("editingInfo") or {}).get("lastEditDate")
+        if ts:
+            dt = pd.to_datetime(ts, unit="ms", utc=True).tz_convert("America/Chicago")
+            return dt.strftime("%m/%d/%Y %I:%M %p") + " CT"
+    except Exception:
+        pass
+    return "Unknown"
+
+last_updated = fetch_last_updated()
+st.caption(f"📡 City of McKinney data last refreshed: **{last_updated}**")
 st.divider()
 
 # ── Sidebar filters ──────────────────────────────────────────────────────────
@@ -421,7 +439,7 @@ with table_col:
 
     df_display.insert(0, "Map Link", [make_maps_link(i) for i in df_display.index])
 
-    # Add Permit link column — field name confirmed via debug expander
+    # Add Permit link column
     def make_permit_link(idx):
         if not permit_num_col:
             return None
