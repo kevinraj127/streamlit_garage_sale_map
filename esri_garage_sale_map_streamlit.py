@@ -213,6 +213,18 @@ if df_raw.empty:
     st.warning("No garage sale records returned from the API.")
 
 # ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
+with st.expander("🔍 Debug: Layer metadata"):
+    try:
+        layer_url = FEATURE_SERVICE_URL.replace("/query", "") + "?f=json"
+        meta_resp = requests.get(layer_url, timeout=10)
+        meta_json = meta_resp.json()
+        st.markdown("**editingInfo:**")
+        st.write(meta_json.get("editingInfo"))
+        st.markdown("**Full metadata keys:**")
+        st.write(list(meta_json.keys()))
+    except Exception as ex:
+        st.write(f"Error: {ex}")
+
 with st.expander("🔍 Debug: API column names"):
     st.write(sorted(df_raw.columns.tolist()))
     st.markdown("**SaleIsToday unique values:**")
