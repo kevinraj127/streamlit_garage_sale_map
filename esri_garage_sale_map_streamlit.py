@@ -116,32 +116,8 @@ st.markdown("## 🎵 McKinney Garage Sales")
 st.markdown("*Music & Film Item Finder — Live from McKinney Open GIS*")
 
 # ── Last refreshed timestamp from ArcGIS layer metadata ──────────────────────
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_last_updated():
-    """Query for the most recent issue_date in the dataset as a data freshness proxy."""
-    import json
-    try:
-        params = {
-            "where": "1=1",
-            "outStatistics": json.dumps([{
-                "statisticType": "max",
-                "onStatisticField": "issue_date",
-                "outStatisticFieldName": "max_issue_date"
-            }]),
-            "f": "json",
-        }
-        resp = requests.get(FEATURE_SERVICE_URL, params=params, timeout=10)
-        data = resp.json()
-        ts = data["features"][0]["attributes"].get("max_issue_date")
-        if ts:
-            dt = pd.to_datetime(ts, unit="ms", utc=True).tz_convert("America/Chicago")
-            return dt.strftime("%m/%d/%Y") + " CT"
-    except Exception:
-        pass
-    return "Unknown"
-
-last_updated = fetch_last_updated()
-st.caption(f"📡 Most recent permit issued in McKinney system: **{last_updated}**")
+fetched_at = pd.Timestamp.now(tz="America/Chicago").strftime("%m/%d/%Y %I:%M %p") + " CT"
+st.caption(f"📡 Data fetched: **{fetched_at}** · McKinney GIS updates nightly from Energov")
 st.divider()
 
 # ── Sidebar filters ──────────────────────────────────────────────────────────
