@@ -114,10 +114,6 @@ h1, h2, h3 {
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown("## 🎵 McKinney Garage Sales")
 st.markdown("*Music & Film Item Finder — Live from McKinney Open GIS*")
-
-# ── Last refreshed timestamp from ArcGIS layer metadata ──────────────────────
-fetched_at = pd.Timestamp.now(tz="America/Chicago").strftime("%m/%d/%Y %I:%M %p") + " CT"
-st.caption(f"📡 Data fetched: **{fetched_at}** · McKinney GIS updates nightly from Energov")
 st.divider()
 
 # ── Sidebar filters ──────────────────────────────────────────────────────────
@@ -138,30 +134,16 @@ def fetch_garage_sales():
     params = {
         "where": "1=1",
         "outFields": "*",
-        "returnGeometry": True,
+        "returnGeometry": "true",
         "f": "json",
+        "resultRecordCount": 2000,
     }
+    resp = requests.get(FEATURE_SERVICE_URL, params=params, timeout=15)
+    resp.raise_for_status()
+    data = resp.json()
 
-    last_error = None
-    data = None
-    for attempt in range(3):
-        try:
-            resp = requests.get(FEATURE_SERVICE_URL, params=params, timeout=15)
-            resp.raise_for_status()
-            data = resp.json()
-            if "error" not in data:
-                break
-            last_error = data["error"].get("message", "Unknown error")
-            details = data["error"].get("details", [])
-            if details:
-                last_error += " — " + "; ".join(details)
-        except Exception as ex:
-            last_error = str(ex)
-        import time
-        time.sleep(1.5)
-
-    if data is None or "error" in data:
-        raise ValueError(f"API error: {last_error}")
+    if "error" in data:
+        raise ValueError(f"API error: {data['error'].get('message', 'Unknown error')}")
 
     features = data.get("features", [])
     if not features:
@@ -213,22 +195,6 @@ if df_raw.empty:
     st.warning("No garage sale records returned from the API.")
 
 # ── DEBUG: show raw column names (remove once permit field is confirmed) ──────
-with st.expander("🔍 Debug: Layer metadata"):
-    try:
-        layer_url = FEATURE_SERVICE_URL.replace("/query", "") + "?f=json"
-        meta_resp = requests.get(layer_url, timeout=10)
-        meta_json = meta_resp.json()
-        st.markdown("**editingInfo:**")
-        st.write(meta_json.get("editingInfo"))
-        st.markdown("**timeInfo:**")
-        st.write(meta_json.get("timeInfo"))
-        st.markdown("**description:**")
-        st.write(meta_json.get("description"))
-        st.markdown("**Full metadata keys:**")
-        st.write(list(meta_json.keys()))
-    except Exception as ex:
-        st.write(f"Error: {ex}")
-
 with st.expander("🔍 Debug: API column names"):
     st.write(sorted(df_raw.columns.tolist()))
     st.markdown("**SaleIsToday unique values:**")
@@ -455,7 +421,7 @@ with table_col:
 
     df_display.insert(0, "Map Link", [make_maps_link(i) for i in df_display.index])
 
-    # Add Permit link column
+    # Add Permit link column — field name confirmed via debug expander
     def make_permit_link(idx):
         if not permit_num_col:
             return None
