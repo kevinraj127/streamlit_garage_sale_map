@@ -138,15 +138,30 @@ def fetch_garage_sales():
     params = {
         "where": "1=1",
         "outFields": "*",
-        "returnGeometry": "true",
+        "returnGeometry": True,
         "f": "json",
     }
-    resp = requests.get(FEATURE_SERVICE_URL, params=params, timeout=15)
-    resp.raise_for_status()
-    data = resp.json()
 
-    if "error" in data:
-        raise ValueError(f"API error: {data['error'].get('message', 'Unknown error')}")
+    last_error = None
+    data = None
+    for attempt in range(3):
+        try:
+            resp = requests.get(FEATURE_SERVICE_URL, params=params, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+            if "error" not in data:
+                break
+            last_error = data["error"].get("message", "Unknown error")
+            details = data["error"].get("details", [])
+            if details:
+                last_error += " — " + "; ".join(details)
+        except Exception as ex:
+            last_error = str(ex)
+        import time
+        time.sleep(1.5)
+
+    if data is None or "error" in data:
+        raise ValueError(f"API error: {last_error}")
 
     features = data.get("features", [])
     if not features:
